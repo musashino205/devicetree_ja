@@ -173,3 +173,197 @@ translated: 2018/02/14, by musashino205
 *node-name* は小文字または大文字のアルファベットから始まり、デバイスの一般クラスを説明する必要があります。
 
 *unit-address* コンポーネントは、ノードが存在するバスタイプへの定義です。これは、表2.1内の文字から1文字以上のASCII文字で成り立ちます。unit-addressは、*reg* プロパティで定義されている最初のアドレスに一致していなければなりません。ノードが *reg* プロパティを持たない場合、*@unit-address* は除去したうえで、ツリーの同レベルにある他のノードからノードを区別しなければなりません。特定のバスに対するバインドを追加で定義する場合、*reg* と *unit-address* の形式の定義がさらに必要になります。
+
+ルートノードは、ノード名やunit-addressを持ちません。スラッシュ (/) により識別されます。
+
+<table style="text-align: center">
+	<thead>
+		<tr>
+			<th>root</th>
+			<th></th>
+			<th></th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td rowspan=6>/</td>
+			<td rowspan=2>cpus</td>
+			<td>cpu@0</td>
+		</tr>
+		<tr>
+			<td>cpu@1</td>
+		</tr>
+		<tr>
+			<td>memory@0</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td>uart@fe001000</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td>ethernet@fe002000</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td>ethernet@fe003000</td>
+			<td></td>
+		</tr>
+	</tbody>
+</table>
+<legend>図2.2（表へ変換）: ノード名の例</legend>
+
+図2.2中:
+- ```cpu``` という名前のノードは、0と1のunit-addressの値で区別されています。
+- ```ethernet``` という名前のノードは、```fe002000``` と ```fe003000``` のunit-addressの値で区別されています。
+
+### 2.2.2 推奨される一般名
+ノード名は、多少一般的で、デバイスの機能を反映し、プログラミングモデルに厳密ではないものにすべきです。使用する場合、名前は以下の選択肢のうちの一つになるべきです。
+
+- adc
+- accelerometer
+- atm
+- audio-codec
+- audio-controller
+- backlight
+- bluetooth
+- bus
+- cache-controller
+- camera
+- can
+- charger
+- clock
+- clock-controller
+- compact-flash
+- cpu
+- cpus
+- crypt
+- disk
+- display
+- dma-controller
+- dsp
+- eeprom
+- efuse
+- endpoint
+- ethernet
+- ethernet-phy
+- fdc
+- flash
+- gpio
+- gpu
+- gyrometer
+- hdmi
+- i2c
+- ide
+- interrupt-controller
+- isa
+- keyboard
+- key
+- keys
+- lcd-controller
+- light-sensor
+- magnetometer
+- mailbox
+- mdio
+- memory
+- memory-controller
+- mmc
+- mmc-slot
+- mouse
+- nand-controller
+- nvram
+- oscillator
+- parallel
+- pc-card
+- pci
+- pcie
+- phy
+- pinctrl
+- pmic
+- pmu
+- port
+- ports
+- pwm
+- regulator
+- reset-controller
+- rtc
+- sata
+- scsi
+- serial
+- sound
+- spi
+- sram-controller
+- ssi-controller
+- syscon
+- temperature-sensor
+- timer
+- touchscreen
+- usb
+- usb-hub
+- usb-phy
+- video-codec
+- vme
+- watchdog
+- wifi
+
+### 2.2.3 パス名
+デバイスツリーのノードは、ルートノードから子ノードを通り、対象のノードへのフルパスを指定することで独自に識別されることができます。
+
+デバイスパス指定の規則:  
+```/node-name-1/node-name-2/node-name-N```
+
+一例として、図2.2における cpu #1 へのデバイスパスは次の通りになります:  
+```/cpus/cpu@1```
+
+ルートノードへのパスは / です。
+もしノードへのフルパスが不明瞭でない場合、unit-addressは記述しなくても問題ありません。
+もしクライアントプログラムが不明瞭なパスに遭遇した場合、それに対する動作は未定義です。
+
+### 2.2.4 プロパティ
+デバイスツリーの各ノードは、ノードの特徴を説明するプロパティを持ちます。プロパティは、名前と値で成り立ちます。
+
+#### プロパティ名
+プロパティ名は、表2.2の文字から成る1～31文字の文字列です。
+
+表2.2: プロパティ名として有効な文字
+
+|文字|説明|
+|:--:|:--:|
+|0 - 9|整数|
+|a - z|アルファベット（小文字）|
+|A - Z|アルファベット（大文字）|
+|,|カンマ|
+|.|ピリオド|
+|_|アンダーバー（アンダースコア）|
+|+|プラス記号|
+|?|クエスチョンマーク|
+|#|ハッシュ記号|
+
+非標準なプロパティ名は、プロパティを定義している企業または組織を識別する名前をユニークなプレフィクス文字列として含むべきです。例:
+
+```fsl,channel-fifo-len```  
+```ibm,ppc-interrupt-server#s```  
+```linux,network-index```
+
+#### プロパティ値
+プロパティ値は、プロパティに結び付けられている情報を含む0以上の配列です。
+
+プロパティは、true-false 情報を伝えている場合に空の値を持つことがあります。この場合、プロパティの存在・非存在は十分に表現されています。
+
+表2.3は、DTSpecによる基本的な値の形式の定義の組み合わせを説明します。
+
+表2.3: プロパティ値
+
+|値|説明|
+|:--:|:--|
+|```<empty>```|値は空です。true-false情報を伝えるために使用され、この時プロパティ自身の存在・非存在を明確に表します。|
+|```<u32>```|big-endian形式での32ビットintegerです。例: 32ビット値 0x11223344 は、メモリ上で以下の通りに表されます:<br /><br />```address   11```<br />```address+1 22```<br />```address+2 33```<br />```address+3 44```|
+|```<u64>```|big-endian形式での64ビットintegerの表現です。2つの ```<u32>``` 値によって成り立ち、最初の値は特に重要なintegerのビットを、2つ目の値はそれ程重要ではないビットを含みます。<br />例: 64ビット値 0x1122334455667788 は、2つのセルで次の様に記述されます:<br />```<0x11223344 0x55667788>```<br />値は、メモリ上で以下の通りに表されます。<br /><br />```address   11```<br />```address+1 22```<br />```address+2 33```<br />```address+3 44```<br />```address+4 55```<br />```address+5 66```<br />```address+6 77```<br />```address+7 88```|
+|```<string>```|printableかつnullで終端される文字列です。例: 文字列 "hello" は、メモリ上で以下の通りに表されます:<br /><br />```address 68 'h'```<br />```address+1 65 'e'```<br />```address+2 6C 'l'```<br />```address+3 6C 'l'```<br />```address+4 6F 'o'```<br />```address+5 00 '\0'```|
+|```<prop-encoded-array>```|フォーマットはプロパティで指定されています。プロパティの定義を見てください。|
+|```<phandle>```|```<u32>``` の値です。*phandle* 値は、デバイスツリー内の他のノードを参照する方法です。いずれのノードも、ユニークな ```<u32>``` 値によりphandleプロパティを定義して参照されることができます。数字は、phandle値形式でプロパティの値に使用されます。|
+|```<stringlist>```|連結された ```<string>``` 値のリストです。<br />例: 文字列リスト "hello","world" は、メモリ上で以下の通りに表されます:<br /><br />```address 68 'h'```<br />```address+1 65 'e'```<br />```address+2 6C 'l'```<br />```address+3 6C 'l'```<br />```address+4 6F 'o'```<br />```address+5 00 '\0'```<br />```address+1 77 'w'```<br />```address+2 6F 'o'```<br />```address+3 72 'r'```<br />```address+4 6C 'l'```<br />```address+4 64 'd'```<br />```address+5 00 '\0'```|
+
+
+
+
